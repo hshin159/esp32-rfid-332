@@ -176,6 +176,7 @@ esp_err_t rc522_init(rc522_config_t* config) {
 
     // copy config considering defaults
     hndl->config->callback         = config->callback;
+    hndl->config->callback2        = config->callback2;
     hndl->config->miso_io          = config->miso_io == 0 ? RC522_DEFAULT_MISO : config->miso_io;
     hndl->config->mosi_io          = config->mosi_io == 0 ? RC522_DEFAULT_MOSI : config->mosi_io;
     hndl->config->sck_io           = config->sck_io == 0 ? RC522_DEFAULT_SCK : config->sck_io;
@@ -457,6 +458,11 @@ static void rc522_task(void* arg) {
             rc522_tag_callback_t cb = hndl->config->callback;
             if(cb) { cb(serial_no); }
         }
+
+        if(serial_no && hndl->tag_was_present_last_time) {
+            rc522_tag_callback2_t cb2 = hndl->config->callback2;
+            if(cb2) { cb2(1); }
+        }
         
         if((hndl->tag_was_present_last_time = (serial_no != NULL))) {
             free(serial_no);
@@ -466,6 +472,7 @@ static void rc522_task(void* arg) {
         int delay_interval_ms = hndl->config->scan_interval_ms;
 
         if(hndl->tag_was_present_last_time) {
+            
             delay_interval_ms *= 2; // extra scan-bursting prevention
         }
 
