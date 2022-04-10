@@ -177,6 +177,7 @@ esp_err_t rc522_init(rc522_config_t* config) {
     // copy config considering defaults
     hndl->config->callback         = config->callback;
     hndl->config->callback2        = config->callback2;
+    hndl->config->callback3        = config->callback3;
     hndl->config->miso_io          = config->miso_io == 0 ? RC522_DEFAULT_MISO : config->miso_io;
     hndl->config->mosi_io          = config->mosi_io == 0 ? RC522_DEFAULT_MOSI : config->mosi_io;
     hndl->config->sck_io           = config->sck_io == 0 ? RC522_DEFAULT_SCK : config->sck_io;
@@ -454,16 +455,27 @@ static void rc522_task(void* arg) {
 
         uint8_t* serial_no = rc522_get_tag();
 
+        // If serial number read and card was not present last scan, run first_contact()
         if(serial_no && ! hndl->tag_was_present_last_time) {
             rc522_tag_callback_t cb = hndl->config->callback;
             if(cb) { cb(serial_no); }
         }
 
+        // If serial number read and a card was also present last scan, run continued_contact()
         if(serial_no && hndl->tag_was_present_last_time) {
             rc522_tag_callback2_t cb2 = hndl->config->callback2;
             if(cb2) { cb2(1); }
         }
+
+        // If there was a card present last scan, but no card currently scanned now, run removal()
+        if ((serial_no == NULL) && hndl->tag_was_present_last_time){
+            rc522_tag_callback3_t cb3 = hndl->config->callback3;
+            if(cb3) { cb3(0); }
+        }
         
+        /* Sets tag_was_present to if a serial number was read (if card is present).
+        * If no card scanned, then sets tag_was_present to false, and deallocates the space used by the serial number
+        */
         if((hndl->tag_was_present_last_time = (serial_no != NULL))) {
             free(serial_no);
             serial_no = NULL;
@@ -472,7 +484,7 @@ static void rc522_task(void* arg) {
         int delay_interval_ms = hndl->config->scan_interval_ms;
 
         if(hndl->tag_was_present_last_time) {
-            
+
             delay_interval_ms *= 2; // extra scan-bursting prevention
         }
 

@@ -17,6 +17,8 @@ extern "C" {
 
 typedef void(*rc522_tag_callback_t)(uint8_t*);
 typedef void(*rc522_tag_callback2_t)(int);
+typedef void(*rc522_tag_callback3_t)(int);
+
 
 
 typedef struct {
@@ -27,6 +29,8 @@ typedef struct {
     spi_host_device_t spi_host_id;  /*<! Default VSPI_HOST (SPI3) */
     rc522_tag_callback_t callback;  /*<! Scanned tags handler */
     rc522_tag_callback2_t callback2;
+    rc522_tag_callback3_t callback3;
+
     uint16_t scan_interval_ms;      /*<! How fast will ESP32 scan for nearby tags, in miliseconds. Default: 125ms */
     size_t task_stack_size;         /*<! Stack size of rc522 task (Default: 4 * 1024) */
     uint8_t task_priority;          /*<! Priority of rc522 task (Default: 4) */

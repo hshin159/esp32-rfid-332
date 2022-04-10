@@ -3,15 +3,20 @@
 
 static const char* TAG = "app";
 
-void tag_handler(uint8_t* sn) { // serial number is always 5 bytes long
+void first_contact(uint8_t* sn) { 
+    // This handler runs only once when a card is first brought up to the scanner
     ESP_LOGI(TAG, "Tag: %#x %#x %#x %#x %#x",
-        sn[0], sn[1], sn[2], sn[3], sn[4]
-    );
+        sn[0], sn[1], sn[2], sn[3], sn[4] );
 }
 
-void tag_handler2(int sn) {
-    ESP_LOGI(TAG, "Tag: %d", sn 
-    );
+void continued_contact(int sn) {
+    // This handler runs on repeat (default 125ms delay) when a card is against the scanner
+    ESP_LOGI(TAG, "Tag: %d", sn );
+}
+
+void removal(int sn) {
+    // This handler runs when card is removed from scanner
+    ESP_LOGI(TAG, "Tag: %d", sn );
 }
 
 void app_main(void) {
@@ -20,8 +25,9 @@ void app_main(void) {
 		.mosi_io = 34,
 		.sck_io = 35,
 		.sda_io = 36,
-        .callback = &tag_handler,
-        .callback2 = &tag_handler2,
+        .callback = &first_contact,
+        .callback2 = &continued_contact,
+        .callback3 = &removal,
 
         // Uncomment next line for attaching RC522 to SPI2 bus. Default is VSPI_HOST (SPI3)
         .spi_host_id = HSPI_HOST
