@@ -21,6 +21,7 @@ void removal(int sn) {
 
 void app_main(void) {
     const rc522_start_args_t start_args = {
+        // Pinout ESP32-S2 dev kit
 		.miso_io = 33,
 		.mosi_io = 34,
 		.sck_io = 35,
