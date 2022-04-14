@@ -204,6 +204,7 @@ esp_err_t rc522_init(rc522_config_t* config) {
         //     rc522_destroy();
         //     return err;
         // }
+        
         while((err = rc522_write(test_addr, i)) != ESP_OK || rc522_read(test_addr) != i) {
             ESP_LOGE(TAG, "RW test fail");
             vTaskDelay(pdMS_TO_TICKS(1000));
